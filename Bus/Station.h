@@ -17,43 +17,30 @@ class Station
 	Queue<Bus*> backwardBuses;
 
 	Passenger* nextPassenger(Bus* bus) {
-		if (bus->IsMixed()) {
-			if (bus->IsForward()) {
-				if (!waitingForwardSpecialPassengers.IsEmpty()) {
-					return waitingForwardSpecialPassengers.Dequeue();
-				}
-				else if (!waitingForwardNormalPassengers.IsEmpty()) {
-					return waitingForwardNormalPassengers.RemoveAt(0);
-				}
-				return nullptr;
-			}
-			else {
-				if (!waitingBackwardSpecialPassengers.IsEmpty()) {
-					return waitingBackwardSpecialPassengers.Dequeue();
-				}
-				else if (!waitingBackwardNormalPassengers.IsEmpty()) {
-					return waitingBackwardNormalPassengers.RemoveAt(0);
-				}
-				return nullptr;
-			}
+		if (bus->IsForward()) {
+			return getNextPassenger(bus, waitingForwardSpecialPassengers, waitingForwardNormalPassengers, waitingForwardWheelPassengers);
 		}
 		else {
-			if (bus->IsForward()) {
-				if (!waitingForwardWheelPassengers.IsEmpty()) {
-					return waitingForwardWheelPassengers.Dequeue();
-				}
-				return nullptr;
-			}
-			else {
-				if (!waitingBackwardWheelPassengers.IsEmpty()) {
-					return waitingBackwardWheelPassengers.Dequeue();
-				}
-				return nullptr;
-			}
+			return getNextPassenger(bus, waitingBackwardSpecialPassengers, waitingBackwardNormalPassengers, waitingBackwardWheelPassengers);
 		}
 	}
 
-public:
+Passenger* getNextPassenger(Bus* bus, PriorityQueue<Passenger*>& specialQueue, LinkedList<Passenger*>& normalQueue, Queue<Passenger*>& wheelQueue) {
+    if (bus->IsMixed()) {
+        if (!specialQueue.IsEmpty()) {
+            return specialQueue.Dequeue();
+        } else if (!normalQueue.IsEmpty()) {
+            return normalQueue.RemoveAt(0);
+        }
+    } else {
+        if (bus->IsForward()) {
+            return !wheelQueue.IsEmpty() ? wheelQueue.Dequeue() : nullptr;
+        } else {
+            return !wheelQueue.IsEmpty() ? wheelQueue.Dequeue() : nullptr;
+        }
+    }
+    return nullptr;
+} public:
 	void addPassenger(Passenger* passenger) {
 		string passengerType = passenger->getType();
 
@@ -243,7 +230,7 @@ public:
 		}
 		return checkupBuses;
 	}
-
+	//Bonus
 	Queue<Bus*> handleLastStation() {
 		Queue<Bus*> checkupBuses;
 		while (!forwardBuses.IsEmpty()) {
@@ -390,4 +377,3 @@ public:
 	}
 
 };
-
